@@ -29,6 +29,10 @@ class BucketManager:
         )
         self.manifest = {}
 
+    def get_bucket(self, bucket_name):
+        """Get a bucket by name."""
+        return self.s3.Bucket(bucket_name)
+
     def get_region_name(self, bucket):
         """Get the bucket's region name."""
         bucket_location = self.s3.meta.client.get_bucket_location(
@@ -101,7 +105,7 @@ class BucketManager:
         })
 
     def load_manifest(self, bucket):
-        """"Load manifest for caching purposes."""
+        """Load manifest for caching purposes."""
         paginator = self.s3.meta.client.get_paginator('list_objects_v2')
         for page in paginator.paginate(Bucket=bucket.name):
             for obj in page.get('Contents', []):
@@ -136,10 +140,7 @@ class BucketManager:
             digests = (h.digest() for h in hashes)
             hash = self.hash_data(reduce(lambda x, y: x + y, digests))
             return '"{}-{}"'.format(hash.hexdigest(), len(hashes))
-            #hash = self.hash_data(reduce(lambda x, y: x + y, (h.digest() for h in hashes)))
-            #return '"{}-{}"'.format(hash.hexdigest(), len(hashes))
 
-    #@staticmethod
     def upload_file(self, bucket, path, key):
         """To upload path to s3_bucket at key."""
         content_type = mimetypes.guess_type(key)[0] or 'text/plain'
